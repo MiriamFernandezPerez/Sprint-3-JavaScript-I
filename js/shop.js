@@ -102,6 +102,26 @@ function calculateTotal() {
 function generateCart() {
     // Using the "cartlist" array that contains all the items in the shopping cart, 
     // generate the "cart" array that does not contain repeated items, instead each item of this array "cart" shows the quantity of product.
+    for (i in cartList){
+        //Hago consulta para saber si hay algun objeto repetido en cartList
+        let resultado = cart.includes(cartList[i]);
+        // console.log(resultado);
+        //Compruebo si es cierta
+        if (resultado == true){
+            // para true aumento en 1 el valor qty 
+            cartList[i].quantity++;
+            // Multiplico el precio del objeto por la cantidad comprada para añadirlo al subtotal 
+            cartList[i].subtotal = cartList[i].quantity * cartList[i].price;
+            // console.log(cart);
+        }else{
+            // Para false agrego por primera vez el objeto a la cart con los valores de carList
+            cart.push(cartList[i]);
+            //Le añado la cantidad y el valor del subtotal
+            cartList[i].quantity = 1;
+            cartList[i].subtotal = cartList[i].price;
+            // console.log(cart);
+        }
+    }
 }
 
 // Exercise 5

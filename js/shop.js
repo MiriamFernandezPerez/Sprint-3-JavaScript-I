@@ -88,6 +88,13 @@ function buy(id) {
 function cleanCart() {
     cartList =[];
     console.log(cartList);
+    console.log(cart);
+    
+    // Añadido para el Ejercicio 6, si borro la CartList, borro también el listado.
+    const select = document.getElementById("cart_list");
+    for (let i = cart.length; i >= 0; i--) {
+        select.remove(i);
+      }
 }
 
 // Exercise 3
@@ -143,6 +150,40 @@ function applyPromotionsCart() {
 // Exercise 6
 function printCart() {
     // Fill the shopping cart modal manipulating the shopping cart dom
+    // Creo una variable para almacenar el elemento donde se dibujará la tabla
+    let table = document.getElementById("cart_list");
+    // Recorro el cart
+    cart.forEach((e)=>{
+        // Construyo la fila
+        const tr = document.createElement("tr");
+        // Construyo el primer campo con th para que sea negrita
+        let tdName = document.createElement("th");
+        // Defino el contenido del th con el nombre
+        tdName.textContent = e.name;
+        // Declaro el padre y el hijo
+        tr.appendChild(tdName)
+        // Hago lo mismo para el resto de datos, esta vez con td
+        // Precio
+        let tdPrice = document.createElement("td");
+        tdPrice.textContent = e.price;
+        tr.appendChild(tdPrice);
+        // Cantidad
+        let tdQty = document.createElement("td");
+        tdQty.textContent = e.quantity;
+        tr.appendChild(tdQty);
+        // Total
+        let tdTotal = document.createElement("td");
+        // Creo un if para distinguir los productos con descuento y sin descuento
+        if(e.subtotalWithDiscount == undefined){
+            tdTotal.textContent = e.subtotal;
+            console.log(e);
+        }else{
+            tdTotal.textContent = e.subtotalWithDiscount;
+        }
+        tr.appendChild(tdTotal);
+
+        table.appendChild(tr);
+    });
 }
 
 

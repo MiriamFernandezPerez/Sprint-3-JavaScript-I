@@ -189,11 +189,27 @@ function printCart() {
 
 // ** Nivell II **
 
-// Exercise 7
+// Exercise 8
 function addToCart(id) {
     // Refactor previous code in order to simplify it 
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cart array or update its quantity in case it has been added previously.
+    let idCart = cart.findIndex(e => e.id == id);
+    let productSelected = products.find(e => e.id == id);
+    // console.log(idCart);
+    // console.log(productSelected);
+
+    if (idCart == -1){
+        cart.push(productSelected);
+        cart[cart.length-1].quantity = 1;
+        cart[cart.length-1].subtotal = productSelected.price;
+        // console.log(cart);
+    }else{
+        cart[idCart].quantity++;
+        cart[idCart].subtotal = cart[idCart].quantity * productSelected.price;
+        applyPromotionsCart();
+        // console.log(cart);
+    }
 }
 
 // Exercise 8

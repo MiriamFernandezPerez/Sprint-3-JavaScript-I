@@ -126,7 +126,7 @@ function generateCart() {
             //Le añado la cantidad y el valor del subtotal
             cartList[i].quantity = 1;
             cartList[i].subtotal = cartList[i].price;
-            // console.log(cart);
+            console.log(cart);
         }
     }
 }
@@ -152,38 +152,76 @@ function printCart() {
     // Fill the shopping cart modal manipulating the shopping cart dom
     // Creo una variable para almacenar el elemento donde se dibujará la tabla
     let table = document.getElementById("cart_list");
+    //Creo una variable para crear un Id dinamico para cada fila, cantidad y total
+    $f=0;
+    $q=0;
+    $t=0;
+    console.log($f);
     // Recorro el cart
     cart.forEach((e)=>{
         // Construyo la fila
         const tr = document.createElement("tr");
+        // Le asigno el Id a la fila
+        tr.id = 'row' + $f;
+        //Incremento en 1 para cambiar el Id en la siguiente fila
+        $f++;
         // Construyo el primer campo con th para que sea negrita
         let tdName = document.createElement("th");
         // Defino el contenido del th con el nombre
         tdName.textContent = e.name;
+        tdName.style.fontSize = '1.2rem';
         // Declaro el padre y el hijo
         tr.appendChild(tdName)
         // Hago lo mismo para el resto de datos, esta vez con td
         // Precio
         let tdPrice = document.createElement("td");
         tdPrice.textContent = e.price;
+        tdPrice.style.fontSize = '1.5rem';
         tr.appendChild(tdPrice);
         // Cantidad
         let tdQty = document.createElement("td");
         tdQty.textContent = e.quantity;
+        tdQty.style.fontSize = '1.5rem';
+        tdQty.id = 'qty'+ $q;
+        $q++;
         tr.appendChild(tdQty);
         // Total
         let tdTotal = document.createElement("td");
         // Creo un if para distinguir los productos con descuento y sin descuento
         if(e.subtotalWithDiscount == undefined){
             tdTotal.textContent = e.subtotal;
-            console.log(e);
         }else{
             tdTotal.textContent = e.subtotalWithDiscount;
         }
+        tdTotal.style.fontSize = '1.5rem';
+        tdTotal.id = 'total'+ $t;
+        $t++;
         tr.appendChild(tdTotal);
+        // Boton para disminuir cantidad
+        let tdBtn = document.createElement('button');
+        // tdBtn.type = 'button';
+        tdBtn.textContent = 'X';
+        tdBtn.id = 'submit';
+        tdBtn.value = 'X';
+        tdBtn.className = 'tdBtn';
+        tdBtn.style.width = '2.7rem';
+        tdBtn.style.margin = '0.8rem'
+        tdBtn.style.color = '#fff';
+        tdBtn.style.fontWeight = 'bold';
+        tdBtn.style.backgroundColor = '#ff0000';
+        tdBtn.style.borderRadius = '6rem';
+        tdBtn.style.borderColor = '#fff';
+        tdBtn.addEventListener('click', (event) =>{
+            let id = e.id;
+            removeFromCart(id, event);
+        })
+        tr.appendChild(tdBtn);
 
         table.appendChild(tr);
+        console.log("lo que pinto")
+        console.log(e);
     });
+    
 }
 
 
@@ -210,12 +248,53 @@ function addToCart(id) {
         applyPromotionsCart();
         // console.log(cart);
     }
+    console.log("lo que he comprado");
+    console.log(cart);
 }
 
-// Exercise 8
-function removeFromCart(id) {
+// Exercise 9
+function removeFromCart(id, event) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cartList array
+    let indexArray = cart.findIndex(e => e.id === id);
+    // Almaceno el evento click para extraer la fila
+    let rowtoDelete = event.path[1];
+    // Almaceno el índice del array con id-1 antes de disminuir la cantidad
+    let itemToDelete = id -1;
+    // Disminuyo en 1 la cantidad de cart
+    cart[indexArray].quantity--;
+    // Creo una variable para almacenar la cantidad del objeto a restar
+    let qty = cart[indexArray].quantity;
+    // Y lo modifico en el DOM
+    document.getElementById('qty'+itemToDelete).innerHTML = qty;
+    
+    // Si la cantidad llega a 0, eliminar el objeto del cart y del DOM
+    if (cart[indexArray].quantity === 0){
+        // Elimino el objeto del cart
+        cart.splice(indexArray, 1);
+        // Elimino la fila impresa del DOM
+            rowtoDelete.remove();
+    }else{
+        recalculatePromotions();
+    }
+
+    function recalculatePromotions(){
+        cart[indexArray].subtotal = qty * cart[indexArray].price;
+        if (id == 1 && qty>=3){
+            cart[indexArray].subtotalWithDiscount = qty * 10;
+            // Y modifico el precio en el DOM
+            document.getElementById('total'+itemToDelete).innerHTML = cart[indexArray].subtotalWithDiscount ;
+        }else if (id == 3 && qty>=10){
+            cart[indexArray].subtotalWithDiscount = (qty * (2/3 * cart[i].price)).toFixed(2);
+            // Y modifico el precio en el DOM
+            document.getElementById('total'+itemToDelete).innerHTML = cart[indexArray].subtotalWithDiscount ;
+        }else{
+            cart[indexArray].subtotalWithDiscount = "There's no discount";
+            // Y modifico el precio en el DOM
+            document.getElementById('total'+itemToDelete).innerHTML = cart[indexArray].subtotal;
+        }
+    }
+    console.log(cart);
 }
 
 function open_modal(){

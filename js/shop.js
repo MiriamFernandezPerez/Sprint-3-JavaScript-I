@@ -71,6 +71,9 @@ var cart = [];
 
 var total = 0;
 
+// Creo un contador para el boton Card
+let counter = 0;
+
 // Exercise 1
 function buy(id) {
     // console.log("Mi lista de la compra "+cartList)
@@ -87,13 +90,17 @@ function buy(id) {
 // Exercise 2
 function cleanCart() {
     cartList =[];
-    // Añadido para el Ejercicio 6, si borro la CartList, borro también el listado.
+    // Igualo a 0 el total de la cesta
+    document.getElementById("total_price").innerHTML = 0;
+    deleteCart();
+}
+
+function deleteCart(){
+    // Añadido modificacion en el DOM, si borro la CartList, borro también el listado.
     const select = document.getElementById("cart_list");
     for (let i = cart.length; i >= 0; i--) {
         select.remove(i);
     }
-    // Igualo a 0 el total de la cesta
-    document.getElementById("total_price").innerHTML = 0;
 }
 
 // Exercise 3
@@ -133,15 +140,17 @@ function generateCart() {
 // Exercise 5
 function applyPromotionsCart() {
     // Apply promotions to each item in the array "cart"
-    for (i in cart){
-        let numId = cart[i].id;
+    for(i in cart){
         let qty = cart[i].quantity;
-        if( numId == 1 && qty>=3){
+        let id = cart[i].id;
+        // cart[i].subtotal = qty * cart[i].price;
+        if (id == 1 && qty>=3){
             cart[i].subtotalWithDiscount = qty * 10;
-            // console.log(cart);
-        }else if (numId == 3 && qty>=10){
+        }else if (id == 3 && qty>=10){
             cart[i].subtotalWithDiscount = (qty * (2/3 * cart[i].price)).toFixed(2);
-            // console.log(cart);
+        }else{
+            cart[i].subtotalWithDiscount = undefined;
+            cart[i].subtotal = qty * cart[i].price;
         }
     }
 }
@@ -151,18 +160,14 @@ function printCart() {
     // Fill the shopping cart modal manipulating the shopping cart dom
     // Creo una variable para almacenar el elemento donde se dibujará la tabla
     let table = document.getElementById("cart_list");
-    //Creo una variable para crear un Id dinamico para cada fila, cantidad y total
-    $f=0;
-    $q=0;
-    $t=0;
     // Recorro el cart
     cart.forEach((e)=>{
         // Construyo la fila
         const tr = document.createElement("tr");
         // Le asigno el Id a la fila
-        tr.id = 'row' + $f;
-        //Incremento en 1 para cambiar el Id en la siguiente fila
-        $f++;
+        tr.id = 'row' + e.id;
+        // //Incremento en 1 para cambiar el Id en la siguiente fila
+        // $f++;
         // Construyo el primer campo con th para que sea negrita
         let tdName = document.createElement("th");
         // Defino el contenido del th con el nombre
@@ -174,14 +179,14 @@ function printCart() {
         // Precio
         let tdPrice = document.createElement("td");
         tdPrice.textContent = e.price;
-        tdPrice.style.fontSize = '1.5rem';
+        tdPrice.style.fontSize = '1.4rem';
         tr.appendChild(tdPrice);
         // Cantidad
         let tdQty = document.createElement("td");
         tdQty.textContent = e.quantity;
-        tdQty.style.fontSize = '1.5rem';
-        tdQty.id = 'qty'+ $q;
-        $q++;
+        tdQty.style.fontSize = '1.4rem';
+        tdQty.id = 'qty'+ e.id;
+        // $q++;
         tr.appendChild(tdQty);
         // Total
         let tdTotal = document.createElement("td");
@@ -191,43 +196,66 @@ function printCart() {
         }else{
             tdTotal.textContent = e.subtotalWithDiscount;
         }
-        tdTotal.style.fontSize = '1.5rem';
-        tdTotal.id = 'total'+ $t;
-        $t++;
+        tdTotal.style.fontSize = '1.4rem';
+        tdTotal.id = 'total'+ e.id;
+        // $t++;
         tr.appendChild(tdTotal);
-        // Boton para disminuir cantidad
-        let tdBtn = document.createElement('button');
+        // Boton para aumentar cantidad
+        let tdMore = document.createElement('button');
         // tdBtn.type = 'button';
-        tdBtn.textContent = 'X';
-        tdBtn.id = 'submit';
-        tdBtn.value = 'X';
-        tdBtn.className = 'tdBtn';
-        tdBtn.style.width = '2.7rem';
-        tdBtn.style.margin = '0.8rem'
-        tdBtn.style.color = '#fff';
-        tdBtn.style.fontWeight = 'bold';
-        tdBtn.style.backgroundColor = '#ff0000';
-        tdBtn.style.borderRadius = '6rem';
-        tdBtn.style.borderColor = '#fff';
-        tdBtn.addEventListener('click', (event) =>{
+        tdMore.textContent = '+';
+        tdMore.id = 'more';
+        tdMore.value = '+';
+        tdMore.className = 'tdMore';
+        tdMore.style.width = '2.2rem';
+        tdMore.style.color = '#fff';
+        tdMore.style.fontWeight = 'bold';
+        tdMore.style.backgroundColor = '#0d6efd';
+        tdMore.style.borderRadius = '2.2rem';
+        tdMore.style.borderColor = '#fff';
+        tdMore.style.margin = '.3rem';
+        tdMore.addEventListener('click', () =>{
             let id = e.id;
-            removeFromCart(id, event);
+            more(id);
         });
-        tr.appendChild(tdBtn);
+        tr.appendChild(tdMore);
+        // Boton para disminuir cantidad
+        let tdLess = document.createElement('button');
+        // tdBtn.type = 'button';
+        tdLess.textContent = '-';
+        tdLess.id = 'less';
+        tdLess.value = '-';
+        tdLess.className = 'tdLess';
+        tdLess.style.width = '2.2rem';
+        tdLess.style.color = '#fff';
+        tdLess.style.fontWeight = 'bold';
+        tdLess.style.backgroundColor = '#dc3545';
+        tdLess.style.borderRadius = '2.2rem';
+        tdLess.style.borderColor = '#fff';
+        tdLess.style.margin = '.3rem';
+        tdLess.addEventListener('click', () =>{
+            let id = e.id;
+            removeFromCart(id);
+        });
+        tr.appendChild(tdLess);
         table.appendChild(tr);
     });
-    
+    printTotal();
+}
+
+function printTotal(){
     // Hago la suma del total para mostrarla
     let totalPrice = 0;
     for (i in cart){
-        if(cart[i].subtotalWithDiscount == null){
+        if(cart[i].subtotalWithDiscount == undefined){
             let price = Number(cart[i].subtotal);
             totalPrice = price + totalPrice;
+            document.getElementById("total_price").innerHTML = totalPrice;
         }else{
             let discount = Number(cart[i].subtotalWithDiscount);
-            totalPrice = Number(discount + totalPrice);
+            totalPrice = discount + totalPrice;
+            document.getElementById("total_price").innerHTML = totalPrice;
         }
-        document.getElementById("total_price").innerHTML = totalPrice;
     }
 }
 
@@ -241,6 +269,8 @@ function addToCart(id) {
     // 2. Add found product to the cart array or update its quantity in case it has been added previously.
     let idCart = cart.findIndex(e => e.id == id);
     let productSelected = products.find(e => e.id == id);
+    // Aumento el contador en el boton Card y lo imprimo
+    counterMore();
 
     if (idCart == -1){
         cart.push(productSelected);
@@ -251,54 +281,85 @@ function addToCart(id) {
         cart[idCart].subtotal = cart[idCart].quantity * productSelected.price;
         applyPromotionsCart();
     }
+    console.log("Lo que añado al carrito");
+    console.log(cart);
 }
 
 // Exercise 9
-function removeFromCart(id, event) {
+function removeFromCart(id) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cartList array
     let indexArray = cart.findIndex(e => e.id === id);
-    // Almaceno el evento click para extraer la fila
-    let rowtoDelete = event.path[1];
-    // Almaceno el índice del array con id-1 antes de disminuir la cantidad
-    let itemToDelete = id -1;
     // Disminuyo en 1 la cantidad de cart
     cart[indexArray].quantity--;
+    applyPromotionsCart();
+    printTotal();
+    counterLess();
     // Creo una variable para almacenar la cantidad del objeto a restar
     let qty = cart[indexArray].quantity;
-    // Y lo modifico en el DOM
-    document.getElementById('qty'+itemToDelete).innerHTML = qty;
-    
-    // Si la cantidad llega a 0, eliminar el objeto del cart y del DOM
-    if (cart[indexArray].quantity === 0){
-        // Elimino el objeto del cart
-        cart.splice(indexArray, 1);
-        // Elimino la fila impresa del DOM
-            rowtoDelete.remove();
-    }else{
-        recalculatePromotions();
-    }
 
-    function recalculatePromotions(){
-        cart[indexArray].subtotal = qty * cart[indexArray].price;
-        if (id == 1 && qty>=3){
-            cart[indexArray].subtotalWithDiscount = qty * 10;
-            // Y modifico el precio en el DOM
-            document.getElementById('total'+itemToDelete).innerHTML = cart[indexArray].subtotalWithDiscount ;
-        }else if (id == 3 && qty>=10){
-            cart[indexArray].subtotalWithDiscount = (qty * (2/3 * cart[i].price)).toFixed(2);
-            // Y modifico el precio en el DOM
-            document.getElementById('total'+itemToDelete).innerHTML = cart[indexArray].subtotalWithDiscount ;
+    // Si la cantidad llega a 0, eliminar el objeto del cart
+    if (cart[indexArray].quantity === 0){
+        cart.splice(indexArray, 1);
+        console.log(cart);
+        deleteRow(id);
+    //Si la cantidad es mayor a 1
+    }else{
+        console.log(cart);
+        document.getElementById('qty'+id).innerHTML = qty;
+        let totalPrice = 0;
+        if(cart[indexArray].subtotalWithDiscount == undefined){
+            let price = Number(cart[indexArray].subtotal);
+            totalPrice = price + totalPrice;
+            document.getElementById("total"+id).innerHTML = totalPrice;
         }else{
-            cart[indexArray].subtotalWithDiscount = "There's no discount";
-            // Y modifico el precio en el DOM
-            document.getElementById('total'+itemToDelete).innerHTML = cart[indexArray].subtotal;
+            let discount = Number(cart[indexArray].subtotalWithDiscount);
+            totalPrice = discount + totalPrice;
+            document.getElementById("total"+id).innerHTML = totalPrice;
         }
     }
-    // console.log(cart);
+}
+
+function counterMore(){
+    counter++;
+    document.getElementById('count_product').innerHTML = counter;
+}
+
+function counterLess(){
+    counter--;
+    document.getElementById('count_product').innerHTML = counter;
+}
+
+function deleteRow(id){
+    let rowtoDelete = document.getElementById('row' +id);
+    rowtoDelete.remove();
+    printTotal();
+}
+
+function more(id){
+    let indexArray = cart.findIndex(e => e.id === id);
+    // Aumento en 1 la cantidad de cart
+    cart[indexArray].quantity++;
+    applyPromotionsCart();
+    printTotal();
+    counterMore();
+    // Creo una variable para almacenar la cantidad del objeto a restar
+    let qty = cart[indexArray].quantity;
+    document.getElementById('qty'+id).innerHTML = qty;
+    let totalPrice = 0;
+    if(cart[indexArray].subtotalWithDiscount == undefined){
+        let price = Number(cart[indexArray].subtotal);
+        totalPrice = price + totalPrice;
+        document.getElementById("total"+id).innerHTML = totalPrice;
+    }else{
+        let discount = Number(cart[indexArray].subtotalWithDiscount);
+        totalPrice = discount + totalPrice;
+        document.getElementById("total"+id).innerHTML = totalPrice;
+    }
 }
 
 function open_modal(){
 	console.log("Open Modal");
 	printCart();
+    console.log(cart);
 }
